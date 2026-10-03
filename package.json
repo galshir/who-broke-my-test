@@ -1,0 +1,52 @@
+{
+  "name": "who-broke-my-test",
+  "version": "0.1.0",
+  "description": "Find the test that breaks your test. Bisects your Vitest suite to the polluting test and shows what it leaked.",
+  "type": "module",
+  "bin": {
+    "who-broke-my-test": "dist/cli.js"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.test.*"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "vitest",
+    "testing",
+    "flaky",
+    "test-pollution",
+    "bisect",
+    "order-dependent",
+    "cli"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "vitest": ">=4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  },
+  "author": "Bar M (https://github.com/galshir)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/galshir/who-broke-my-test.git"
+  },
+  "homepage": "https://github.com/galshir/who-broke-my-test#readme",
+  "bugs": {
+    "url": "https://github.com/galshir/who-broke-my-test/issues"
+  }
+}
