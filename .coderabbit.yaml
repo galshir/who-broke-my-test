@@ -1,0 +1,48 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+tone_instructions: "Be concise and actionable. Focus on correctness, test isolation, and DX."
+early_access: false
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  sequence_diagrams: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+  path_filters:
+    - "!dist/**"
+    - "!coverage/**"
+    - "!**/*.lock"
+    - "!package-lock.json"
+    - "!pnpm-lock.yaml"
+  path_instructions:
+    - path: "src/**/*.ts"
+      instructions: |
+        This is a CLI/library that bisects a Vitest suite to find the test polluting shared state.
+        Check for: correct async/child-process handling, cross-platform paths (Windows),
+        clear error messages, and strict TypeScript types (no `any`).
+    - path: "test/**/*.ts"
+      instructions: |
+        Tests must be deterministic and isolated. Flag shared mutable state between tests,
+        missing cleanup, and timing-dependent assertions.
+    - path: "**/*.md"
+      instructions: "Check that docs and README examples match the actual CLI flags and API."
+  tools:
+    eslint:
+      enabled: true
+    biome:
+      enabled: true
+    markdownlint:
+      enabled: true
+    gitleaks:
+      enabled: true
+
+chat:
+  auto_reply: true
