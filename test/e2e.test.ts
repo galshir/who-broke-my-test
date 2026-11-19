@@ -62,4 +62,18 @@ describe('findPolluter (end to end, real Vitest runs)', () => {
     const result = await find('clean', 'ok.spec.ts', 'does not exist')
     expect(result.status).toBe('target-not-found')
   })
+
+  it('reports the exit code left behind by the polluting test', async () => {
+    const result = await find('exit-code', 'exit-code.spec.ts')
+    expect(result.status).toBe('found')
+    if (result.status !== 'found') return
+    expect(result.culprits).toEqual([
+      expect.objectContaining({
+        test: 'sets a nonzero exit code',
+        leaks: expect.arrayContaining([
+          { kind: 'exit-code', message: 'process.exitCode changed (unset) → 1' },
+        ]),
+      }),
+    ])
+  })
 })

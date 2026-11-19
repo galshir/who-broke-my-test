@@ -43,7 +43,7 @@ export interface TrialResult {
 }
 
 export interface Leak {
-  kind: 'env' | 'global' | 'patched' | 'spy' | 'fake-timers' | 'cwd' | 'listeners' | 'handles'
+  kind: 'env' | 'global' | 'patched' | 'spy' | 'fake-timers' | 'cwd' | 'exit-code' | 'listeners' | 'handles'
   message: string
 }
 

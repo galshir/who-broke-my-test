@@ -45,6 +45,7 @@ That is a search problem, and computers are good at search.
 | patched builtins | `Date.now was replaced and not restored` |
 | fake timers | `fake timers are still on (missing vi.useRealTimers())` |
 | working directory | `process.cwd() changed` |
+| process exit code | `process.exitCode changed (unset) → 1` |
 | process listeners | `1 process.on('unhandledRejection') listener(s) left behind` |
 | open handles | `1 open Timeout handle(s) left behind` |
 
