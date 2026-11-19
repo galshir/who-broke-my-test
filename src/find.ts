@@ -1,4 +1,4 @@
-import { relative, resolve } from 'node:path'
+import { relative, resolve, sep } from 'node:path'
 import { minimize } from './search.js'
 import { TrialRunner, type TrialOptions, type TrialOutcome } from './trial.js'
 import type { LeakRecord, TestOutcome, Unit } from './types.js'
@@ -56,7 +56,8 @@ function stateOf(result: TrialOutcome, id: string) {
 
 export async function findPolluter(options: FindOptions): Promise<FindResult> {
   const root = resolve(options.root)
-  const file = resolve(options.root, options.file)
+  // Vitest reports globbed module IDs with forward slashes on Windows too.
+  const file = resolve(root, options.file).replaceAll(sep, '/')
   const runner = new TrialRunner({ ...options, root })
   const phase = (message: string) => options.onProgress?.({ type: 'phase', message })
   const step = (remaining: number) => options.onProgress?.({ type: 'trial', trials: runner.trials, remaining })
@@ -184,10 +185,11 @@ export async function findPolluter(options: FindOptions): Promise<FindResult> {
         const failingTests = (await failsWith([unit(tests)]))
           ? await minimize(tests, (subset) => failsWith([unit(subset)]), step)
           : []
-        // If the module still breaks the target without those tests, the
-        // culprit is top-level code or a hook, not a test.
+        // A filter that matches no IDs still loads the module. This control
+        // distinguishes top-level side effects from the body of its only test.
         const others = tests.filter((t) => !failingTests.includes(t))
-        const moduleLevel = failingTests.length === 0 || (others.length > 0 && (await failsWith([unit(others)])))
+        const control = others.length > 0 ? unit(others) : { ...unit([]), testIds: ['__wbmt_module_only__'] }
+        const moduleLevel = failingTests.length === 0 || (await failsWith([control]))
         if (!moduleLevel) {
           proofUnits = [unit(failingTests)]
           const proof = await runner.run([...proofUnits, targetUnit])
