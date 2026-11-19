@@ -41,6 +41,27 @@ describe('findPolluter (end to end, real Vitest runs)', () => {
     )
   })
 
+  it('blames module-level code even when the module only contains one test', async () => {
+    const result = await find('single-test-module', 'reader.spec.ts')
+    expect(result.status).toBe('found')
+    if (result.status !== 'found') return
+    expect(result.scope).toBe('file')
+    expect(result.culprits).toHaveLength(1)
+    expect(result.culprits[0]!.file).toMatch(/writer\.spec\.ts$/)
+    expect(result.culprits[0]!.test).toBeUndefined()
+    expect(result.culprits[0]!.leaks.map((leak) => leak.message)).toContain(
+      'process.env.WBMT_SINGLE_MODULE_MODE changed (unset) → "production"',
+    )
+  })
+
+  it('still blames a single test body when loading its module is harmless', async () => {
+    const result = await find('single-test-body', 'reader.spec.ts')
+    expect(result.status).toBe('found')
+    if (result.status !== 'found') return
+    expect(result.scope).toBe('test')
+    expect(result.culprits.map((culprit) => culprit.test)).toEqual(['changes the environment'])
+  })
+
   it('reports every polluter when the failure needs several of them', async () => {
     const result = await find('multi', 'flags.spec.ts')
     expect(result.status).toBe('found')
