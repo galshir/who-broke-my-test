@@ -43,6 +43,7 @@ interface Snapshot {
   watched: Map<string, unknown>
   fakeTimers: boolean
   cwd: string
+  exitCode: string | number | undefined
   listeners: Map<string, number>
   handles: Map<string, number>
 }
@@ -61,6 +62,7 @@ function take(): Snapshot {
     watched: new Map(WATCHED.map(([name, get]) => [name, safe(get)])),
     fakeTimers: vi.isFakeTimers(),
     cwd: process.cwd(),
+    exitCode: process.exitCode ?? undefined,
     listeners: new Map(PROCESS_EVENTS.map((e) => [e, process.listenerCount(e)])),
     handles: countHandles(),
   }
@@ -74,7 +76,7 @@ function safe(get: () => unknown): unknown {
   }
 }
 
-function show(value: string | undefined): string {
+function show(value: string | number | undefined): string {
   return value === undefined ? '(unset)' : JSON.stringify(value)
 }
 
@@ -117,6 +119,10 @@ function compare(before: Snapshot): Leak[] {
 
   if (before.cwd !== after.cwd) {
     leaks.push({ kind: 'cwd', message: `process.cwd() changed ${before.cwd} → ${after.cwd}` })
+  }
+
+  if (before.exitCode !== after.exitCode) {
+    leaks.push({ kind: 'exit-code', message: `process.exitCode changed ${show(before.exitCode)} → ${show(after.exitCode)}` })
   }
 
   for (const [event, count] of after.listeners) {
